@@ -1,0 +1,5 @@
+component Home{
+    <h1 class="clase">
+        Hello!
+    </h1>
+}
