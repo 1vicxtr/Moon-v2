@@ -3,92 +3,82 @@
 #include <string.h>
 #include <ctype.h>
 
-typedef enum {
-    TOK_KEYWORD,
-    TOK_IDENTIFIER,
-    TOK_SYMBOL,
-    TOK_TAG,
-    TOK_TEXT,
-    TOK_EOF
-} TokenType;
+typedef enum { TOK_KEYWORD, TOK_IDENTIFIER, TOK_SYMBOL, TOK_TAG, TOK_TEXT, TOK_EOF } TokenType;
 
 typedef struct {
     TokenType type;
-    char lexeme[512]; // más grande para tags con atributos
+    char lexeme[512];
 } Token;
 
 Token tokens[1024];
 int tokenCount = 0;
 
-int is_keyword(const char *word) {
-    return strcmp(word, "component") == 0;
+// ---------------- Función para agregar tokens ----------------
+void addToken(TokenType type, const char *lexeme) {
+    if (tokenCount < 1024) {
+        tokens[tokenCount].type = type;
+        strncpy(tokens[tokenCount].lexeme, lexeme, sizeof(tokens[tokenCount].lexeme) - 1);
+        tokens[tokenCount].lexeme[sizeof(tokens[tokenCount].lexeme) - 1] = '\0';
+        tokenCount++;
+    }
 }
 
-void add_token(TokenType type, const char *lexeme) {
-    tokens[tokenCount].type = type;
-    strcpy(tokens[tokenCount].lexeme, lexeme);
-    tokenCount++;
-}
-
+// ---------------- Lexer ----------------
 void lexer(const char *filename) {
     FILE *f = fopen(filename, "r");
-    if (!f) { printf("No se pudo abrir %s\n", filename); exit(1); }
+    if (!f) {
+        printf("❌ Error al abrir %s\n", filename);
+        exit(1);
+    }
 
     int c;
+    char buffer[512];
+    int idx = 0;
+    int insideTag = 0;
+
     while ((c = fgetc(f)) != EOF) {
-        if (isalpha(c)) {
-            char buffer[256];
-            int idx = 0;
-            buffer[idx++] = c;
-
-            while ((c = fgetc(f)) != EOF && (isalnum(c) || c == '_'))
-                buffer[idx++] = c;
-            buffer[idx] = '\0';
-
-            if (is_keyword(buffer))
-                add_token(TOK_KEYWORD, buffer);
-            else
-                add_token(TOK_IDENTIFIER, buffer);
-
-            if (c != EOF) ungetc(c, f);
-        } 
-        else if (c == '{' || c == '}' || c == '(' || c == ')' || c == ';') {
-            char sym[2] = {c, '\0'};
-            add_token(TOK_SYMBOL, sym);
-        } 
-        else if (c == '<') {
-            char tag[512];
-            int j = 0;
-            tag[j++] = c;
-            while ((c = fgetc(f)) != EOF && c != '>') tag[j++] = c;
-            tag[j++] = '>';
-            tag[j] = '\0';
-            add_token(TOK_TAG, tag);
-
-            // Capturar texto inmediatamente después del tag
-            long pos = ftell(f);
-            c = fgetc(f);
-            if (c != '<' && c != EOF && c != '{' && c != '}') {
-                char text[256];
-                int k = 0;
-                text[k++] = c;
-                while ((c = fgetc(f)) != EOF && c != '<' && c != '{' && c != '}' && c != '\n')
-                    text[k++] = c;
-                text[k] = '\0';
-
-                // eliminar espacios al inicio y final
-                int start = 0, end = k-1;
-                while (isspace(text[start])) start++;
-                while (end >= start && isspace(text[end])) end--;
-                text[end+1] = '\0';
-
-                if (start <= end) add_token(TOK_TEXT, text + start);
-            } else if (c != EOF) {
-                fseek(f, pos, SEEK_SET);
+        if (c == '<') {
+            // Guardar texto previo antes del tag
+            if (idx > 0 && !insideTag) {
+                buffer[idx] = '\0';
+                int start = 0;
+                while (isspace(buffer[start])) start++;
+                int end = strlen(buffer) - 1;
+                while (end >= start && isspace(buffer[end])) end--;
+                if (end >= start) {
+                    buffer[end + 1] = '\0';
+                    addToken(TOK_TEXT, buffer + start);
+                }
+                idx = 0;
             }
+            insideTag = 1;
+            buffer[idx++] = c;
+        } 
+        else if (c == '>') {
+            buffer[idx++] = c;
+            buffer[idx] = '\0';
+            addToken(TOK_TAG, buffer);
+            idx = 0;
+            insideTag = 0;
+        } 
+        else {
+            buffer[idx++] = c;
         }
     }
 
-    add_token(TOK_EOF, "EOF");
+    // Guardar último texto si hay
+    if (idx > 0 && !insideTag) {
+        buffer[idx] = '\0';
+        int start = 0;
+        while (isspace(buffer[start])) start++;
+        int end = strlen(buffer) - 1;
+        while (end >= start && isspace(buffer[end])) end--;
+        if (end >= start) {
+            buffer[end + 1] = '\0';
+            addToken(TOK_TEXT, buffer + start);
+        }
+    }
+
+    addToken(TOK_EOF, "EOF");
     fclose(f);
 }
