@@ -3,6 +3,8 @@
 #include <string.h>
 #include <dirent.h>
 
+#define COMPONENTS_DIR "../components"
+
 typedef enum
 {
     TOK_KEYWORD,
@@ -12,6 +14,7 @@ typedef enum
     TOK_TEXT,
     TOK_EOF
 } TokenType;
+
 typedef struct
 {
     TokenType type;
@@ -30,56 +33,10 @@ typedef struct ElementStack
     struct ElementStack *prev;
 } ElementStack;
 
-void parse_and_generate()
+// Genera un componente a partir de los tokens ya cargados
+void generate_component(FILE *out, const char *componentName)
 {
-    FILE *out = fopen("output.js", "w");
-    DIR *index = opendir("components");
-    if (!index) {
-        perror("Error al abrir el directorio");
-        return 1;
-    }
-
-    struct dirent *archivo;
-    char name_archivo[256];
-    char base_name[256];
-    FILE *indexJS = fopen("index.js", "w"); // Abrir archivo una sola vez
-    if (!out) {
-        perror("Error al abrir index.js");
-        closedir(index);
-        return 1;
-    }
-    fprintf(indexJS, "function init(){\n");
-    fprintf(indexJS, "const root = document.body;\n");
-     while ((archivo = readdir(index))) {
-        if (strcmp(archivo->d_name, ".") == 0 || strcmp(archivo->d_name, "..") == 0)
-            continue; // Ignorar . y ..
-
-        // Copiar nombre a variable
-        strcpy(name_archivo, archivo->d_name);
-
-        // Buscar extensión .mn
-        char *ext = strrchr(name_archivo, '.'); // Encuentra el último "."
-        if (ext && strcmp(ext, ".mn") == 0) {
-            *ext = '\0'; // Eliminar extensión, ahora name_archivo es solo el nombre base
-        } else {
-            continue; // Saltar archivos que no sean .mn
-        }
-
-        // Copiar a base_name
-        strcpy(base_name, name_archivo);
-        fprintf(indexJS, "%s(root);\n", base_name);
-
-        // Escribir en index.js
-        fprintf(out, "function %s(root) {\n", base_name);
-    }
-    fprintf(indexJS, "}\n");
-    closedir(index);
-
-    if (!out)
-    {
-        printf("Error al abrir output.js\n");
-        exit(1);
-    }
+    fprintf(out, "function %s(root) {\n", componentName);
 
     ElementStack *stack = NULL;
     int elemId = 0;
@@ -89,19 +46,13 @@ void parse_and_generate()
         Token t = tokens[i];
 
         if (t.type == TOK_KEYWORD && strcmp(t.lexeme, "component") == 0)
-        {
             continue;
-        }
         else if (t.type == TOK_IDENTIFIER)
-        {
-            // nombre del componente, ignorar por ahora
             continue;
-        }
         else if (t.type == TOK_TAG)
         {
             if (t.lexeme[1] == '/')
             {
-                // cerrar tag
                 if (stack)
                 {
                     ElementStack *old = stack;
@@ -111,12 +62,10 @@ void parse_and_generate()
             }
             else
             {
-                // abrir tag
                 char tagName[64] = "";
                 char attrs[256] = "";
                 sscanf(t.lexeme, "<%63[^ >]", tagName);
 
-                // atributos
                 char *space = strchr(t.lexeme, ' ');
                 if (space)
                 {
@@ -162,47 +111,65 @@ void parse_and_generate()
                 fprintf(out, "  e%d.textContent = \"%s\";\n", stack->id, t.lexeme);
         }
     }
-    fprintf(indexJS, "init();\n");
-    fclose(indexJS);
-    fprintf(out, "}\n");
-    fclose(out);
-    printf("✅ output.js generado correctamente\n");
+
+    fprintf(out, "}\n\n");
 }
 
 int main()
 {
-    DIR *dir = opendir("components");
-    if (!dir) {
-        perror("❌ Error al abrir carpeta components");
+    DIR *dir = opendir(COMPONENTS_DIR);
+    if (!dir)
+    {
+        perror("❌ Error al abrir carpeta de componentes");
         return 1;
     }
 
+    FILE *out = fopen("output.js", "w");
+    FILE *indexJS = fopen("index.js", "w");
+    if (!out || !indexJS)
+    {
+        perror("❌ Error al abrir archivos JS");
+        closedir(dir);
+        return 1;
+    }
+
+    fprintf(indexJS, "function init(){\n");
+    fprintf(indexJS, "const root = document.body;\n");
+
     struct dirent *archivo;
     char ruta[512];
+    char base_name[256];
 
-    while ((archivo = readdir(dir))) {
-        // Ignorar . y ..
+    while ((archivo = readdir(dir)))
+    {
         if (strcmp(archivo->d_name, ".") == 0 || strcmp(archivo->d_name, "..") == 0)
             continue;
 
-        // Verificar extensión .mn
         char *ext = strrchr(archivo->d_name, '.');
-        if (ext && strcmp(ext, ".mn") == 0) {
-            snprintf(ruta, sizeof(ruta), "components/%s", archivo->d_name);
+        if (!ext || strcmp(ext, ".mn") != 0)
+            continue;
 
-            printf("📄 Procesando: %s\n", ruta);
+        // Nombre base sin extensión
+        strncpy(base_name, archivo->d_name, ext - archivo->d_name);
+        base_name[ext - archivo->d_name] = '\0';
 
-            // Resetear tokens antes de cada archivo
-            tokenCount = 0;
+        snprintf(ruta, sizeof(ruta), "%s/%s", COMPONENTS_DIR, archivo->d_name);
+        printf("📄 Procesando: %s\n", ruta);
 
-            // Analizar archivo
-            lexer(ruta);
+        tokenCount = 0;
+        lexer(ruta);                     // Cargar tokens del archivo
+        generate_component(out, base_name); // Generar función JS
 
-            // Generar output con los tokens cargados
-            parse_and_generate();
-        }
+        fprintf(indexJS, "%s(root);\n", base_name); // Llamada en init
     }
 
+    fprintf(indexJS, "}\n");
+    fprintf(indexJS, "init();\n");
+
+    fclose(out);
+    fclose(indexJS);
     closedir(dir);
+
+    printf("✅ output.js y index.js generados correctamente\n");
     return 0;
 }

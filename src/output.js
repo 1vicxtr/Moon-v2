@@ -14,3 +14,17 @@ function Home(root) {
   e3.appendChild(e4);
   e4.textContent = "Hellooo is text h3!";
 }
+
+function App(root) {
+  let e1 = document.createElement('h1');
+  e1.setAttribute("class", "App");
+  root.appendChild(e1);
+  e1.textContent = "Hello is App!";
+}
+
+function Footer(root) {
+  let e1 = document.createElement('p');
+  root.appendChild(e1);
+  e1.textContent = "Lorem";
+}
+
