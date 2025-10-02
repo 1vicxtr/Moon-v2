@@ -60,3 +60,7 @@ component Home{
 ***
 ## Version
 Moon is in its first quarter phase (v1.2), so you can now write HTML tags and text inside them. 
+
+## Documentation
+
+See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for a detailed explanation of how Moon works.
