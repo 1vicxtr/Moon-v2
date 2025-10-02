@@ -5,16 +5,36 @@
 
 #define COMPONENTS_DIR "../components"
 
-#include "lexer.c" // incluimos lexer directamente
+typedef enum
+{
+    TOK_KEYWORD,
+    TOK_IDENTIFIER,
+    TOK_SYMBOL,
+    TOK_TAG,
+    TOK_TEXT,
+    TOK_JSBLOCK,
+    TOK_EOF
+} TokenType;
 
-typedef struct ElementStack {
+typedef struct
+{
+    TokenType type;
+    char lexeme[1024];
+} Token;
+
+extern Token tokens[2048];
+extern int tokenCount;
+extern void lexer(const char *filename);
+
+typedef struct ElementStack
+{
     char tagName[64];
     char attributes[256];
     int id;
     struct ElementStack *prev;
 } ElementStack;
 
-// Genera un componente a partir de los tokens ya cargados
+// ----------------- Generar un componente JS -----------------
 void generate_component(FILE *out, const char *componentName)
 {
     fprintf(out, "function %s(root) { \n", componentName);
@@ -25,10 +45,6 @@ void generate_component(FILE *out, const char *componentName)
     for (int i = 0; i < tokenCount; i++)
     {
         Token t = tokens[i];
-
-        // Ignorar <html> y </html>
-        if (t.type == TOK_HTML_OPEN || t.type == TOK_HTML_CLOSE)
-            continue;
 
         if (t.type == TOK_KEYWORD && strcmp(t.lexeme, "component") == 0)
             continue;
@@ -50,6 +66,9 @@ void generate_component(FILE *out, const char *componentName)
                 char tagName[64] = "";
                 char attrs[256] = "";
                 sscanf(t.lexeme, "<%63[^ >]", tagName);
+
+                if (strcmp(tagName, "html") == 0 || strcmp(tagName, "/html") == 0)
+                    continue;
 
                 char *space = strchr(t.lexeme, ' ');
                 if (space)
@@ -95,11 +114,21 @@ void generate_component(FILE *out, const char *componentName)
             if (stack)
                 fprintf(out, "  e%d.textContent = \"%s\";\n", stack->id, t.lexeme);
         }
+        else if (t.type == TOK_JSBLOCK)
+        {
+            fprintf(out, "  // Bloque JS crudo\n");
+            size_t len = strlen(t.lexeme);
+            if (len > 0 && t.lexeme[len-1] != ';' && t.lexeme[len-1] != '\n')
+                fprintf(out, "  %s;\n", t.lexeme);
+            else
+                fprintf(out, "  %s\n", t.lexeme);
+        }
     }
 
     fprintf(out, "}\n\n");
 }
 
+// ----------------- Main -----------------
 int main()
 {
     DIR *dir = opendir(COMPONENTS_DIR);
@@ -134,7 +163,6 @@ int main()
         if (!ext || strcmp(ext, ".mn") != 0)
             continue;
 
-        // Nombre base sin extensión
         strncpy(base_name, archivo->d_name, ext - archivo->d_name);
         base_name[ext - archivo->d_name] = '\0';
 
@@ -142,10 +170,10 @@ int main()
         printf("📄 Procesando: %s\n", ruta);
 
         tokenCount = 0;
-        lexer(ruta);                     // Cargar tokens del archivo
-        generate_component(out, base_name); // Generar función JS
+        lexer(ruta);
+        generate_component(out, base_name);
 
-        fprintf(indexJS, "%s(root);\n", base_name); // Llamada en init
+        fprintf(indexJS, "%s(root);\n", base_name);
     }
 
     fprintf(indexJS, "}\n");

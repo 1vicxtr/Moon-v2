@@ -1,7 +1,9 @@
 function init(){
 const root = document.body;
-Home(root);
-App(root);
+Header(root);
+UserList(root);
+Counter(root);
+Footer(root);
 }
 
 init();
