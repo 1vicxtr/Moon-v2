@@ -16,14 +16,15 @@ Just as the moon has phases, front-end web development also evolves in different
 ## How to use the compiler
 
     The directory will be like this:
-    Moon -> 
-    component ->
-        This is where the .mn files will be
-    src ->
-        This is where the C compiler will be
-    index.html
-    style.css
-    README.md
+
+    Moon-v2/
+    ├── bin/ -> Here are the executables
+    ├── components/ -> Here you will write moon code in the .mn files
+    ├── src/ -> Here are the JavaScript interpreters
+    ├── compiler/ -> Here are the .C files
+    ├── index.html
+    ├── style.css
+    └── README.md
 
 - Windows: Type the moon syntax and to run it just run the parser.exe executable.
 - Linux: just use this command ./parser
