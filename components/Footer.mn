@@ -1,0 +1,5 @@
+component Footer {
+    <html>
+        <footer>Moon Dashboard © 2025</footer>
+    </html>
+}

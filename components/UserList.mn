@@ -1,0 +1,18 @@
+component UserList {
+    <html>
+        <ul id="user-list"></ul>
+    </html>
+
+    js(
+        const users = ["Alice", "Bob", "Charlie"];
+        const ul = document.getElementById("user-list");
+
+        users.forEach(u => {
+            const li = document.createElement("li");
+            li.textContent = u;
+            li.addEventListener("click", () => alert("Usuario: " + u));
+            ul.appendChild(li);
+        });
+    )
+}
+  

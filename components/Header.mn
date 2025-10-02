@@ -1,0 +1,5 @@
+component Header {
+    <html>
+        <h1>🌙 Moon Dashboard</h1>
+    </html>
+}

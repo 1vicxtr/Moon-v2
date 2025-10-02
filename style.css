@@ -1,3 +1,13 @@
-.clase1{
-    color: aqua;
+body{
+    text-align: center;
+    padding: 0 auto;
+}
+*{
+    padding: 5px;
+}
+li{
+    list-style: none;
+}
+li:hover{
+    cursor: pointer;
 }

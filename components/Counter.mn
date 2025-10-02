@@ -1,0 +1,29 @@
+component Counter {
+    <html>
+        <div id="counter-container">
+            <p id="counter-value">0</p>
+        </div>
+    </html>
+
+    js(
+        let count = 0;
+        const value = document.getElementById("counter-value");
+
+        const incBtn = document.createElement("button");
+        incBtn.textContent = "Incrementar";
+        incBtn.addEventListener("click", () => {
+            count++;
+            value.textContent = count;
+        });
+
+        const decBtn = document.createElement("button");
+        decBtn.textContent = "Decrementar";
+        decBtn.addEventListener("click", () => {
+            count--;
+            value.textContent = count;
+        });
+
+        document.getElementById("counter-container").appendChild(incBtn);
+        document.getElementById("counter-container").appendChild(decBtn);
+    )
+}
