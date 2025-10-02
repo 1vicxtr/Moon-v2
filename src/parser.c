@@ -5,28 +5,9 @@
 
 #define COMPONENTS_DIR "../components"
 
-typedef enum
-{
-    TOK_KEYWORD,
-    TOK_IDENTIFIER,
-    TOK_SYMBOL,
-    TOK_TAG,
-    TOK_TEXT,
-    TOK_EOF
-} TokenType;
+#include "lexer.c" // incluimos lexer directamente
 
-typedef struct
-{
-    TokenType type;
-    char lexeme[512];
-} Token;
-
-extern Token tokens[1024];
-extern int tokenCount;
-extern void lexer(const char *filename);
-
-typedef struct ElementStack
-{
+typedef struct ElementStack {
     char tagName[64];
     char attributes[256];
     int id;
@@ -36,7 +17,7 @@ typedef struct ElementStack
 // Genera un componente a partir de los tokens ya cargados
 void generate_component(FILE *out, const char *componentName)
 {
-    fprintf(out, "function %s(root) {\n", componentName);
+    fprintf(out, "function %s(root) { \n", componentName);
 
     ElementStack *stack = NULL;
     int elemId = 0;
@@ -44,6 +25,10 @@ void generate_component(FILE *out, const char *componentName)
     for (int i = 0; i < tokenCount; i++)
     {
         Token t = tokens[i];
+
+        // Ignorar <html> y </html>
+        if (t.type == TOK_HTML_OPEN || t.type == TOK_HTML_CLOSE)
+            continue;
 
         if (t.type == TOK_KEYWORD && strcmp(t.lexeme, "component") == 0)
             continue;
@@ -164,7 +149,7 @@ int main()
     }
 
     fprintf(indexJS, "}\n");
-    fprintf(indexJS, "init();\n");
+    fprintf(indexJS, "\ninit();\n");
 
     fclose(out);
     fclose(indexJS);

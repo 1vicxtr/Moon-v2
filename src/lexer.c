@@ -3,7 +3,16 @@
 #include <string.h>
 #include <ctype.h>
 
-typedef enum { TOK_KEYWORD, TOK_IDENTIFIER, TOK_SYMBOL, TOK_TAG, TOK_TEXT, TOK_EOF } TokenType;
+typedef enum { 
+    TOK_KEYWORD, 
+    TOK_IDENTIFIER, 
+    TOK_SYMBOL, 
+    TOK_TAG, 
+    TOK_TEXT, 
+    TOK_HTML_OPEN,  // <html>
+    TOK_HTML_CLOSE, // </html>
+    TOK_EOF 
+} TokenType;
 
 typedef struct {
     TokenType type;
@@ -57,7 +66,12 @@ void lexer(const char *filename) {
         else if (c == '>') {
             buffer[idx++] = c;
             buffer[idx] = '\0';
-            addToken(TOK_TAG, buffer);
+
+            // Detectar <html> y </html>
+            if (strcmp(buffer, "<html>") == 0) addToken(TOK_HTML_OPEN, buffer);
+            else if (strcmp(buffer, "</html>") == 0) addToken(TOK_HTML_CLOSE, buffer);
+            else addToken(TOK_TAG, buffer);
+
             idx = 0;
             insideTag = 0;
         } 
