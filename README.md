@@ -29,11 +29,14 @@ Moon's syntax is very friendly.
 ~~~~
 // Home.mn
 component Home{
-    <h1 class="clase">Hello is text h1!</h1>
-    <h2 class="clase2">Helloo is text h2!</h2>
-    <div>
-        <h3 class="clase3">Hellooo is text h3!</h3>
-    </div>
+    <html>
+        //Code HTML
+        <h1>Hello Word!</h1>
+    </html>
+    js(
+        //Code JavaScript
+        alert("Hello word!");
+    )
 }
 
 ~~~~
