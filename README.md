@@ -11,15 +11,22 @@ Just as the moon has phases, front-end web development also evolves in different
 
 1. Clone my repository: 
  git clone https://github.com/1vicxtr/Moon.git
-2. It will give you my folder
-In index.html, the bundle.js file, which is the Moon interpreter, is already connected.
-3. In the /compiler folder are the lexers and parsers (compilers)
-4. The .mn (moon) files will go in the components/ folder.
+
 
 ## How to use the compiler
 
-- If you are using Windows, just run moon-compiler (if it doesn't work, contact me).
-- If you are using Linux, just use this command ./parser
+    The directory will be like this:
+    Moon -> 
+    component ->
+        This is where the .mn files will be
+    src ->
+        This is where the C compiler will be
+    index.html
+    style.css
+    README.md
+
+- Windows: Type the moon syntax and to run it just run the parser.exe executable.
+- Linux: just use this command ./parser
 
 
 # Syntax 
@@ -38,8 +45,9 @@ component Home{
         alert("Hello word!");
     )
 }
-
 ~~~~
+
+
 
 ***
 ## Version
