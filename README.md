@@ -19,7 +19,7 @@ In index.html, the bundle.js file, which is the Moon interpreter, is already con
 ## How to use the compiler
 
 - If you are using Windows, just run moon-compiler (if it doesn't work, contact me).
-- If you are using Linux, just use this command ./watcher
+- If you are using Linux, just use this command ./parser
 
 
 # Syntax 
