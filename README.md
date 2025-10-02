@@ -13,7 +13,7 @@ Just as the moon has phases, front-end web development also evolves in different
  git clone https://github.com/1vicxtr/Moon.git
 
 
-## How to use the compiler
+## Directories
 
     The directory will be like this:
 
@@ -52,4 +52,4 @@ component Home{
 
 ***
 ## Version
-Moon is in its first quarter phase (v1.1), so you can now write HTML tags and text inside them. In addition to declaring variables (int and string), I'm of course working on improving the syntax.
+Moon is in its first quarter phase (v1.2), so you can now write HTML tags and text inside them. 
