@@ -3,7 +3,7 @@
 #include <string.h>
 #include <dirent.h>
 
-#define COMPONENTS_DIR "../components"
+#define COMPONENTS_DIR "../components/"
 
 typedef enum
 {
