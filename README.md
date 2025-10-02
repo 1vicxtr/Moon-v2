@@ -6,6 +6,13 @@ This repository was created for Moon, a React-inspired language. Moon doesn't re
 
 Just as the moon has phases, front-end web development also evolves in different stages. That's why the name Moon fits perfectly. You don't need servers or external programs: everything you need is right here, in this folder.
 
+## How moon works
+
+> 1. Moon doesn't need servers or dependencies.
+> 2. The compiler (parser) written in C reads .mn files.
+> 3. .mn code is converted into JavaScript functions (output.js).
+> 4. Call the functions from index.js in HTML.
+
 
 ## Installation
 

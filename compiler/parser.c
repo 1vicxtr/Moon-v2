@@ -138,8 +138,8 @@ int main()
         return 1;
     }
 
-    FILE *out = fopen("output.js", "w");
-    FILE *indexJS = fopen("index.js", "w");
+    FILE *out = fopen("../src/output.js", "w");
+    FILE *indexJS = fopen("../src/index.js", "w");
     if (!out || !indexJS)
     {
         perror("❌ Error al abrir archivos JS");
